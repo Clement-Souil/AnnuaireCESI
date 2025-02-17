@@ -1,0 +1,28 @@
+# Visual Studio
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Entity Framework Migrations
+Migrations/
+
+# Package managers
+node_modules/
+packages/
+
+# Database files
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+# Environment variables
+.env
