@@ -1,46 +1,67 @@
 using AnnuaireLibrary.Data;
+using AnnuaireLibrary.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Ajout du DbContext avec MySQL
+// Ajouter le DbContext avec Identity
 builder.Services.AddDbContext<AnnuaireContext>(options =>
     options.UseMySql("server=localhost;port=3306;userid=root;password=;database=AnnuaireDB;",
                      ServerVersion.AutoDetect("server=localhost;port=3306;userid=root;password=;database=AnnuaireDB;")));
 
-// Ajouter les services MVC et JSON
-builder.Services.AddControllers().AddNewtonsoftJson();
+// Ajouter ASP.NET Identity
+builder.Services.AddIdentity<UserSecure, IdentityRole>()
+    .AddEntityFrameworkStores<AnnuaireContext>()
+    .AddDefaultTokenProviders()
+    .AddApiEndpoints();
 
-// Autoriser les appels API depuis n'importe quelle source 
-builder.Services.AddCors(options =>
+// Configurer l'authentification JWT
+var key = Encoding.UTF8.GetBytes("MaSuperCleSecretePourJWT123!"); 
+builder.Services.AddAuthentication(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy => policy.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ClockSkew = TimeSpan.Zero
+    };
 });
 
+builder.Services.AddAuthorization();
+
+// Ajouter Swagger et activer l'authentification
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Annuaire API", Version = "v1" });
-});
+builder.Services.AddSwaggerGen();
+builder.Services.AddControllers();
 
 var app = builder.Build();
+
+// Activer l'authentification et l'autorisation
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapIdentityApi<UserSecure>();
+
+app.MapControllers();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Annuaire API v1");
-    });
+    app.UseSwaggerUI();
 }
 
-// Activer CORS ( sert à autoriser les appels depuis le frontend )
-app.UseCors("AllowAll");
 
-app.UseAuthorization();
-app.MapControllers();
 app.Run();

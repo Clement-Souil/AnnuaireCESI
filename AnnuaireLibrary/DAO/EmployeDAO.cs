@@ -20,10 +20,10 @@ namespace AnnuaireLibrary.DAO
 
         public int ServiceId { get; set; } = 0;
         [ForeignKey("ServiceId")]
-        public ServiceDAO Service { get; set; }
+        public ServiceDAO? Service { get; set; }
 
         public int SiteId { get; set; } = 0;
         [ForeignKey("SiteId")]
-        public SiteDAO Site { get; set; }
+        public SiteDAO? Site { get; set; }
     }
 }
