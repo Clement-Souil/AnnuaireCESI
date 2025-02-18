@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using AnnuaireLibrary.Data;  // Correction du namespace
+using AnnuaireLibrary.Data; 
 
 namespace AnnuaireLibrary.Factories
 {
@@ -17,3 +17,4 @@ namespace AnnuaireLibrary.Factories
         }
     }
 }
+
