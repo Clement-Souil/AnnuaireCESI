@@ -1,67 +1,54 @@
 using AnnuaireLibrary.Data;
 using AnnuaireLibrary.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Ajouter le DbContext avec Identity
+//  Connexion à la base de données
 builder.Services.AddDbContext<AnnuaireContext>(options =>
-    options.UseMySql("server=localhost;port=3306;userid=root;password=;database=AnnuaireDB;",
-                     ServerVersion.AutoDetect("server=localhost;port=3306;userid=root;password=;database=AnnuaireDB;")));
+    options.UseMySql(
+        "server=localhost;port=3306;userid=root;password=;database=AnnuaireDB;",
+        ServerVersion.AutoDetect("server=localhost;port=3306;userid=root;password=;database=AnnuaireDB;"))
+);
 
-// Ajouter ASP.NET Identity
+//  Configuration d'ASP.NET Identity (sans JWT)
 builder.Services.AddIdentity<UserSecure, IdentityRole>()
     .AddEntityFrameworkStores<AnnuaireContext>()
-    .AddDefaultTokenProviders()
-    .AddApiEndpoints();
+    .AddDefaultTokenProviders();
 
-// Configurer l'authentification JWT
-var key = Encoding.UTF8.GetBytes("MaSuperCleSecretePourJWT123!"); 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ClockSkew = TimeSpan.Zero
-    };
-});
-
-builder.Services.AddAuthorization();
-
-// Ajouter Swagger et activer l'authentification
+//  Ajout des services MVC
+builder.Services.AddControllersWithViews();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Annuaire API",
+        Version = "v1"
+    });
+});
 
 var app = builder.Build();
 
-// Activer l'authentification et l'autorisation
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapIdentityApi<UserSecure>();
-
-app.MapControllers();
-
+//  Configuration du pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Annuaire API V1");
+        options.RoutePrefix = "swagger"; // URL accessible sur /swagger
+    });
 }
 
+app.UseHttpsRedirection(); // Force HTTPS
+app.UseStaticFiles(); // Active les fichiers statiques
+app.UseRouting(); // Active le routage
+app.UseAuthentication(); // Active l'authentification ASP.NET Identity
+app.UseAuthorization(); // Active l'autorisation
+
+app.MapControllers(); // Mappe les routes vers les contrôleurs
 
 app.Run();

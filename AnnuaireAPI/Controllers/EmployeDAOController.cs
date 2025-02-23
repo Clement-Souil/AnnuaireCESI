@@ -4,6 +4,10 @@ using AnnuaireLibrary.Data;
 using AnnuaireLibrary.DTO;
 using AnnuaireLibrary.DAO;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using AnnuaireLibrary.Models;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace AnnuaireAPI.Controllers
 {
@@ -13,23 +17,25 @@ namespace AnnuaireAPI.Controllers
     public class EmployeController : ControllerBase
     {
         private readonly AnnuaireContext _context;
+        private readonly UserManager<UserSecure> _userManager;
+        private readonly ILogger<EmployeController> _logger;
 
-        // Injection de dépendance du contexte de base de données
-        public EmployeController(AnnuaireContext context)
+        public EmployeController(AnnuaireContext context, UserManager<UserSecure> userManager, ILogger<EmployeController> logger)
         {
             _context = context;
+            _userManager = userManager;
+            _logger = logger;
         }
 
-        // GET : api/employe
-        // Accessible par tout le monde (visiteur + admin)
+        //  Lister tous les employés (accessible à tous)
         [HttpGet]
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<EmployeDTO>>> GetEmployes()
         {
-            // Récupération de tous les employés avec leurs services et sites
             var employes = await _context.Employes
-                .Include(e => e.Service) // Jointure avec la table Service
-                .Include(e => e.Site)    //Jointure avec la table Site
+                .Include(e => e.Service)
+                .Include(e => e.Site)
+                .AsNoTracking() // Optimisation
                 .Select(e => new EmployeDTO
                 {
                     Id = e.Id,
@@ -38,24 +44,23 @@ namespace AnnuaireAPI.Controllers
                     TelephoneFixe = e.TelephoneFixe,
                     TelephonePortable = e.TelephonePortable,
                     Email = e.Email,
-                    Service = e.Service.Nom, // On retourne le nom du service, pas l'ID
-                    Site = e.Site.Ville       // On retourne la ville du site, pas l'ID
+                    Service = e.Service.Nom,
+                    Site = e.Site.Ville
                 })
                 .ToListAsync();
 
-            return Ok(employes); // Retourne la liste des employés au format JSON
+            return Ok(employes);
         }
 
-        // GET : api/employe/5
-        // Accessible par tout le monde (visiteur + admin)
+        //  Récupérer un employé par ID
         [HttpGet("{id}")]
         [AllowAnonymous]
         public async Task<ActionResult<EmployeDTO>> GetEmploye(int id)
         {
-            // Recherche de l'employé par son ID
             var employe = await _context.Employes
                 .Include(e => e.Service)
                 .Include(e => e.Site)
+                .AsNoTracking()
                 .Where(e => e.Id == id)
                 .Select(e => new EmployeDTO
                 {
@@ -70,23 +75,18 @@ namespace AnnuaireAPI.Controllers
                 })
                 .FirstOrDefaultAsync();
 
-            if (employe == null)
-            {
-                return NotFound(); // Si l'employé n'existe pas, retourne une erreur 404
-            }
-
-            return Ok(employe); // Retourne l'employé trouvé
+            return employe == null ? NotFound("Employé non trouvé") : Ok(employe);
         }
-       
-        // GET : api/employe/search/nom/{query}
-        // Rechercher les employés par nom ou prénom
+
+        //  Recherche par nom/prénom
         [HttpGet("search/nom/{query}")]
-        [AllowAnonymous]  // Ouvert à tout le monde pour la consultation
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<EmployeDTO>>> SearchByName(string query)
         {
             var employes = await _context.Employes
                 .Include(e => e.Service)
                 .Include(e => e.Site)
+                .AsNoTracking()
                 .Where(e => e.Nom.Contains(query) || e.Prenom.Contains(query))
                 .Select(e => new EmployeDTO
                 {
@@ -104,16 +104,16 @@ namespace AnnuaireAPI.Controllers
             return Ok(employes);
         }
 
-        // GET : api/employe/search/site/{site}
-        // Rechercher les employés par site (Ville)
+        //  Recherche par site (ville)
         [HttpGet("search/site/{site}")]
-        [AllowAnonymous]  // Ouvert à tout le monde pour la consultation
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<EmployeDTO>>> SearchBySite(string site)
         {
             var employes = await _context.Employes
                 .Include(e => e.Service)
                 .Include(e => e.Site)
-                .Where(e => e.Site.Ville.Contains(site))  // Filtre sur la ville du site
+                .AsNoTracking()
+                .Where(e => e.Site.Ville.Contains(site))
                 .Select(e => new EmployeDTO
                 {
                     Id = e.Id,
@@ -130,16 +130,16 @@ namespace AnnuaireAPI.Controllers
             return Ok(employes);
         }
 
-        // GET : api/employe/search/service/{service}
-        // Rechercher les employés par service (Nom du service)
+        //  Recherche par service
         [HttpGet("search/service/{service}")]
-        [AllowAnonymous]  // Ouvert à tout le monde pour la consultation
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<EmployeDTO>>> SearchByService(string service)
         {
             var employes = await _context.Employes
                 .Include(e => e.Service)
                 .Include(e => e.Site)
-                .Where(e => e.Service.Nom.Contains(service))  // Filtre sur le nom du service
+                .AsNoTracking()
+                .Where(e => e.Service.Nom.Contains(service))
                 .Select(e => new EmployeDTO
                 {
                     Id = e.Id,
@@ -156,23 +156,20 @@ namespace AnnuaireAPI.Controllers
             return Ok(employes);
         }
 
-
-        // POST : api/employe
-        // Accessible uniquement par un administrateur
+        //  Ajouter un employé (ADMIN uniquement)
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<EmployeDTO>> PostEmploye(EmployeDTO employeDTO)
         {
-            // Vérification que le service et le site existent en base de données
+            if (string.IsNullOrWhiteSpace(employeDTO.Nom) || string.IsNullOrWhiteSpace(employeDTO.Prenom))
+                return BadRequest("Nom et prénom sont obligatoires");
+
             var service = await _context.Services.FirstOrDefaultAsync(s => s.Nom == employeDTO.Service);
             var site = await _context.Sites.FirstOrDefaultAsync(s => s.Ville == employeDTO.Site);
 
             if (service == null || site == null)
-            {
-                return BadRequest("Le service ou le site n'existe pas."); // Erreur si l'un des deux est introuvable
-            }
+                return BadRequest("Le service ou le site n'existe pas.");
 
-            // 🛠Création d'un nouvel employé à partir du DTO
             var employe = new EmployeDAO
             {
                 Nom = employeDTO.Nom,
@@ -180,37 +177,59 @@ namespace AnnuaireAPI.Controllers
                 TelephoneFixe = employeDTO.TelephoneFixe,
                 TelephonePortable = employeDTO.TelephonePortable,
                 Email = employeDTO.Email,
-                ServiceId = service.Id, // On utilise l'ID du service existant
-                SiteId = site.Id         // On utilise l'ID du site existant
+                ServiceId = service.Id,
+                SiteId = site.Id
             };
 
-            _context.Employes.Add(employe); // Ajout de l'employé en base de données
-            await _context.SaveChangesAsync(); // Sauvegarde des modifications
+            _context.Employes.Add(employe);
+            await _context.SaveChangesAsync();
 
-            employeDTO.Id = employe.Id; // Mise à jour du DTO avec l'ID généré
+            employeDTO.Id = employe.Id;
 
-            // Retourne l'employé créé avec un lien vers sa ressource
             return CreatedAtAction(nameof(GetEmploye), new { id = employeDTO.Id }, employeDTO);
         }
 
-        // DELETE : api/employe/5
-        // Accessible uniquement par un administrateur
+
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteEmploye(int id)
         {
-            // Recherche de l'employé par son ID
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                Console.WriteLine("Tentative de suppression sans être connecté.");
+                return Unauthorized("Vous devez être connecté.");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user) ?? new List<string>(); // Empêche le null (je comprends rien punaise)
+
+            if (roles.Count == 0)
+            {
+                Console.WriteLine("Accès refusé : L'utilisateur n'a aucun rôle attribué.");
+                return Forbid("Accès refusé : Vous n'avez aucun rôle attribué.");
+            }
+
+            if (!roles.Contains("Admin"))
+            {
+                Console.WriteLine("Accès refusé : Vous n'êtes pas administrateur.");
+                return Forbid("Accès refusé : action réservée aux administrateurs.");
+            }
+
             var employe = await _context.Employes.FindAsync(id);
             if (employe == null)
             {
-                return NotFound(); // Erreur 404 si l'employé n'existe pas
+                Console.WriteLine("Employé introuvable !");
+                return NotFound("Employé non trouvé.");
             }
 
-            _context.Employes.Remove(employe); // Suppression de l'employé
-            await _context.SaveChangesAsync(); // Sauvegarde des modifications
+            _context.Employes.Remove(employe);
+            await _context.SaveChangesAsync();
 
-            return NoContent(); // Retourne un succès sans contenu (204 No Content)
+            Console.WriteLine($"Suppression réussie de l'employé {id} par {user.Email}");
+            return NoContent();
         }
+
+
+
+
     }
 }
-
