@@ -28,9 +28,9 @@ namespace Seeder
             try
             {
                 //  Appliquer les migrations
-                Console.WriteLine("🔄 Migration de la base de données...");
+                Console.WriteLine("Migration de la base de données...");
                 await _context.Database.MigrateAsync();
-                Console.WriteLine("✅ Migration terminée.");
+                Console.WriteLine("Migration terminée.");
 
                 //  Peupler les Sites
                 if (!await _context.Sites.AnyAsync())
@@ -45,13 +45,13 @@ namespace Seeder
                         new SiteDAO { Ville = "Lille" }
                     });
                     await _context.SaveChangesAsync();
-                    Console.WriteLine("✅ Sites ajoutés.");
+                    Console.WriteLine("Sites ajoutés.");
                 }
 
                 //  Peupler les Services
                 if (!await _context.Services.AnyAsync())
                 {
-                    Console.WriteLine("📌 Ajout des services...");
+                    Console.WriteLine("Ajout des services...");
                     await _context.Services.AddRangeAsync(new List<ServiceDAO>
                     {
                         new ServiceDAO { Nom = "Informatique" },
@@ -61,13 +61,13 @@ namespace Seeder
                         new ServiceDAO { Nom = "Comptabilité" }
                     });
                     await _context.SaveChangesAsync();
-                    Console.WriteLine("✅ Services ajoutés.");
+                    Console.WriteLine("Services ajoutés.");
                 }
 
-                //  Peupler les Employés
+                // Peupler les Employés
                 if (!await _context.Employes.AnyAsync())
                 {
-                    Console.WriteLine("📌 Ajout des employés...");
+                    Console.WriteLine("Ajout des employés...");
                     var noms = new[] { "Dupont", "Martin", "Bernard", "Petit", "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefevre" };
                     var prenoms = new[] { "Jean", "Marie", "Pierre", "Sophie", "Paul", "Julie", "Michel", "Claire", "Jacques", "Laura" };
                     var random = new Random();
@@ -76,36 +76,56 @@ namespace Seeder
                     var services = await _context.Services.ToListAsync();
 
                     var employes = new List<EmployeDAO>();
+                    var emailsExistants = new HashSet<string>(await _context.Employes.Select(e => e.Email).ToListAsync()); // Récupère tous les emails existants
 
                     for (int i = 0; i < 100; i++)
                     {
-                        var nom = noms[random.Next(noms.Length)];
-                        var prenom = prenoms[random.Next(prenoms.Length)];
-                        var email = $"{prenom.ToLower()}.{nom.ToLower()}@entreprise.com";
-
-                        employes.Add(new EmployeDAO
+                        string email;
+                        int attempts = 0;
+                        do
                         {
-                            Nom = nom,
-                            Prenom = prenom,
-                            TelephoneFixe = $"01{random.Next(10000000, 99999999)}",
-                            TelephonePortable = $"06{random.Next(10000000, 99999999)}",
-                            Email = email,
-                            ServiceId = services[random.Next(services.Count)].Id,
-                            SiteId = sites[random.Next(sites.Count)].Id
-                        });
+                            var nom = noms[random.Next(noms.Length)];
+                            var prenom = prenoms[random.Next(prenoms.Length)];
+                            email = $"{prenom.ToLower()}.{nom.ToLower()}@entreprise.com";
+                            attempts++;
+                        } while (emailsExistants.Contains(email) && attempts < 10); // Vérifie dans la HashSet
+
+                        if (attempts < 10) // Si on a trouvé un email unique
+                        {
+                            emailsExistants.Add(email); // Ajoute l'email à la liste des existants pour éviter les doublons
+
+                            employes.Add(new EmployeDAO
+                            {
+                                Nom = noms[random.Next(noms.Length)],
+                                Prenom = prenoms[random.Next(prenoms.Length)],
+                                TelephoneFixe = $"01{random.Next(10000000, 99999999)}",
+                                TelephonePortable = $"06{random.Next(10000000, 99999999)}",
+                                Email = email,
+                                ServiceId = services[random.Next(services.Count)].Id,
+                                SiteId = sites[random.Next(sites.Count)].Id
+                            });
+                        }
                     }
 
-                    await _context.Employes.AddRangeAsync(employes);
-                    await _context.SaveChangesAsync();
-                    Console.WriteLine("✅ Employés ajoutés.");
+                    try
+                    {
+                        await _context.Employes.AddRangeAsync(employes);
+                        await _context.SaveChangesAsync();
+                        Console.WriteLine("Employés ajoutés.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"ERREUR LORS DE L'AJOUT DES EMPLOYÉS : {ex.Message}");
+                    }
                 }
+
 
                 //  Création du rôle Admin
                 if (!await _roleManager.RoleExistsAsync("Admin"))
                 {
-                    Console.WriteLine("📌 Création du rôle Admin...");
+                    Console.WriteLine("Création du rôle Admin...");
                     await _roleManager.CreateAsync(new IdentityRole("Admin"));
-                    Console.WriteLine("✅ Rôle Admin créé.");
+                    Console.WriteLine("Rôle Admin créé.");
                 }
 
                 //  Création de l'utilisateur Admin
