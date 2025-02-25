@@ -35,7 +35,7 @@ namespace Seeder
                 //  Peupler les Sites
                 if (!await _context.Sites.AnyAsync())
                 {
-                    Console.WriteLine("📌 Ajout des sites...");
+                    Console.WriteLine("Ajout des sites...");
                     await _context.Sites.AddRangeAsync(new List<SiteDAO>
                     {
                         new SiteDAO { Ville = "Paris" },
@@ -131,7 +131,7 @@ namespace Seeder
                 //  Création de l'utilisateur Admin
                 if (await _userManager.FindByEmailAsync("admin@annuaire.com") == null)
                 {
-                    Console.WriteLine("📌 Création de l'Admin...");
+                    Console.WriteLine("Création de l'Admin...");
                     var admin = new UserSecure
                     {
                         UserName = "admin@annuaire.com",

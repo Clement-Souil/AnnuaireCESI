@@ -5,14 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AnnuaireApp"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Annuaire" Height="600" Width="900">
     <Grid>
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-            <!-- Affichage du titre depuis MainViewModel -->
-            <TextBlock Text="{Binding Titre}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+        <DockPanel>
+            <!-- Menu latéral -->
+            <StackPanel DockPanel.Dock="Left" Background="#2C3E50" Width="200">
+                <Button Content="Employés" Command="{Binding NavigateToEmploye}" Foreground="White" />
+                <Button Content="Services" Command="{Binding NavigateToService}" Foreground="White" />
+                <Button Content="Sites" Command="{Binding NavigateToSite}" Foreground="White" />
+                <Button Content="Admin" Command="{Binding NavigateToAdmin}" Foreground="White" />
+                <Button Content="Déconnexion" Command="{Binding LogoutCommand}" Foreground="White" />
+            </StackPanel>
 
-            <!-- Bouton qui change le titre -->
-            <Button Content="Changer le titre" Command="{Binding ChangerTitreCommand}" Padding="10" Margin="10"/>
-        </StackPanel>
+            <!-- Contenu principal qui change en fonction de la navigation -->
+            <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" />
+        </DockPanel>
     </Grid>
 </Window>
