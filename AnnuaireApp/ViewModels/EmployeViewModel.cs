@@ -31,6 +31,29 @@ namespace AnnuaireApp.ViewModels
         public ICommand EditEmployeCommand { get; }
         public ICommand DeleteEmployeCommand { get; }
 
+        // Listes des services et sites
+        private ObservableCollection<ServiceDTO> _services = new();
+        public ObservableCollection<ServiceDTO> Services
+        {
+            get => _services;
+            set
+            {
+                _services = value;
+                OnPropertyChanged(nameof(Services));
+            }
+        }
+
+        private ObservableCollection<SiteDTO> _sites = new();
+        public ObservableCollection<SiteDTO> Sites
+        {
+            get => _sites;
+            set
+            {
+                _sites = value;
+                OnPropertyChanged(nameof(Sites));
+            }
+        }
+
         // Constructeur
         public EmployeViewModel()
         {

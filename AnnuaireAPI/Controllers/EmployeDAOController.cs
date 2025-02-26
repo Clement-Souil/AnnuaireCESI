@@ -44,6 +44,8 @@ namespace AnnuaireAPI.Controllers
                     TelephoneFixe = e.TelephoneFixe,
                     TelephonePortable = e.TelephonePortable,
                     Email = e.Email,
+                    ServiceId = e.Service.Id,  // Ajout de l'ID
+                    SiteId = e.Site.Id,
                     Service = e.Service.Nom,
                     Site = e.Site.Ville
                 })
@@ -70,6 +72,8 @@ namespace AnnuaireAPI.Controllers
                     TelephoneFixe = e.TelephoneFixe,
                     TelephonePortable = e.TelephonePortable,
                     Email = e.Email,
+                    ServiceId = e.Service.Id,  // Ajout de l'ID
+                    SiteId = e.Site.Id,
                     Service = e.Service.Nom,
                     Site = e.Site.Ville
                 })
@@ -96,6 +100,8 @@ namespace AnnuaireAPI.Controllers
                     TelephoneFixe = e.TelephoneFixe,
                     TelephonePortable = e.TelephonePortable,
                     Email = e.Email,
+                    ServiceId = e.Service.Id,  // Ajout de l'ID
+                    SiteId = e.Site.Id,
                     Service = e.Service.Nom,
                     Site = e.Site.Ville
                 })
@@ -122,6 +128,8 @@ namespace AnnuaireAPI.Controllers
                     TelephoneFixe = e.TelephoneFixe,
                     TelephonePortable = e.TelephonePortable,
                     Email = e.Email,
+                    ServiceId = e.Service.Id,  // Ajout de l'ID
+                    SiteId = e.Site.Id,
                     Service = e.Service.Nom,
                     Site = e.Site.Ville
                 })
@@ -148,6 +156,8 @@ namespace AnnuaireAPI.Controllers
                     TelephoneFixe = e.TelephoneFixe,
                     TelephonePortable = e.TelephonePortable,
                     Email = e.Email,
+                    ServiceId = e.Service.Id,  // Ajout de l'ID
+                    SiteId = e.Site.Id,
                     Service = e.Service.Nom,
                     Site = e.Site.Ville
                 })
@@ -164,8 +174,8 @@ namespace AnnuaireAPI.Controllers
             if (string.IsNullOrWhiteSpace(employeDTO.Nom) || string.IsNullOrWhiteSpace(employeDTO.Prenom))
                 return BadRequest("Nom et prénom sont obligatoires");
 
-            var service = await _context.Services.FirstOrDefaultAsync(s => s.Nom == employeDTO.Service);
-            var site = await _context.Sites.FirstOrDefaultAsync(s => s.Ville == employeDTO.Site);
+            var service = await _context.Services.FirstOrDefaultAsync(s => s.Id == employeDTO.ServiceId);
+            var site = await _context.Sites.FirstOrDefaultAsync(s => s.Id == employeDTO.SiteId);
 
             if (service == null || site == null)
                 return BadRequest("Le service ou le site n'existe pas.");
