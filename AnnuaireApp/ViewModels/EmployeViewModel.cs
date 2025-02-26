@@ -67,7 +67,12 @@ namespace AnnuaireApp.ViewModels
         // Méthodes des boutons (pour l’instant vides)
         private void ExecuteAddEmploye(object? parameter)
         {
-            MessageBox.Show("Ajout employé");
+            var addEmployeView = new Views.AddEmployeView
+            {
+                DataContext = new AddEmployeViewModel()
+            };
+            addEmployeView.ShowDialog();
+            LoadEmployes(); // Rafraîchir la liste après l'ajout
         }
 
         private void ExecuteEditEmploye(object? parameter)

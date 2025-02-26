@@ -9,6 +9,8 @@
         public string? TelephonePortable { get; set; }
         public string? Email { get; set; }
         public string? Service { get; set; } 
-        public string? Site { get; set; }  
+        public string? Site { get; set; }
+        public int ServiceId { get; set; }
+        public int SiteId { get; set; }
     }
 }
