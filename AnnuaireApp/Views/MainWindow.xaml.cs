@@ -24,6 +24,7 @@ namespace AnnuaireApp.Views
         {
             InitializeComponent();
             DataContext = new MainViewModel(); // Ca c'est que lie à MainViewModel pour que ca régisse au changements.
+
         }
     }
 }

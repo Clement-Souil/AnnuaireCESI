@@ -9,9 +9,20 @@
       Title="Liste des Employés">
 
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Ligne pour les boutons -->
+            <RowDefinition Height="*"/>
+            <!-- Ligne pour la liste -->
+        </Grid.RowDefinitions>
+        <!-- Boutons CRUD au-dessus de la liste -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
+            <Button Content="Ajouter" Command="{Binding AddEmployeCommand}" Width="80" />
+            <Button Content="Modifier" Command="{Binding EditEmployeCommand}" Width="80" />
+            <Button Content="Supprimer" Command="{Binding DeleteEmployeCommand}" Width="80" />
+        </StackPanel>
         <!-- Tableau pour afficher les employés -->
-        <DataGrid ItemsSource="{Binding Employes}" AutoGenerateColumns="False" IsReadOnly="True">
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Employes}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*" />
                 <DataGridTextColumn Header="Prénom" Binding="{Binding Prenom}" Width="*" />
