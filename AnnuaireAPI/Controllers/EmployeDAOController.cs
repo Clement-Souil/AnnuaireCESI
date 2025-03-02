@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace AnnuaireAPI.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class EmployeController : ControllerBase
@@ -166,9 +166,33 @@ namespace AnnuaireAPI.Controllers
             return Ok(employes);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutEmploye(int id, EmployeDTO employeDTO)
+        {
+            if (id != employeDTO.Id)
+                return BadRequest("L'ID de l'employé ne correspond pas.");
+
+            var employe = await _context.Employes.FindAsync(id);
+            if (employe == null)
+                return NotFound();
+
+            employe.Nom = employeDTO.Nom;
+            employe.Prenom = employeDTO.Prenom;
+            employe.TelephoneFixe = employeDTO.TelephoneFixe;
+            employe.TelephonePortable = employeDTO.TelephonePortable;
+            employe.Email = employeDTO.Email;
+            employe.ServiceId = employeDTO.ServiceId;
+            employe.SiteId = employeDTO.SiteId;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+
         //  Ajouter un employé (ADMIN uniquement)
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<ActionResult<EmployeDTO>> PostEmploye(EmployeDTO employeDTO)
         {
             if (string.IsNullOrWhiteSpace(employeDTO.Nom) || string.IsNullOrWhiteSpace(employeDTO.Prenom))
@@ -203,43 +227,14 @@ namespace AnnuaireAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmploye(int id)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                Console.WriteLine("Tentative de suppression sans être connecté.");
-                return Unauthorized("Vous devez être connecté.");
-            }
-
-            var roles = await _userManager.GetRolesAsync(user) ?? new List<string>(); // Empêche le null (je comprends rien punaise)
-
-            if (roles.Count == 0)
-            {
-                Console.WriteLine("Accès refusé : L'utilisateur n'a aucun rôle attribué.");
-                return Forbid("Accès refusé : Vous n'avez aucun rôle attribué.");
-            }
-
-            if (!roles.Contains("Admin"))
-            {
-                Console.WriteLine("Accès refusé : Vous n'êtes pas administrateur.");
-                return Forbid("Accès refusé : action réservée aux administrateurs.");
-            }
-
             var employe = await _context.Employes.FindAsync(id);
             if (employe == null)
-            {
-                Console.WriteLine("Employé introuvable !");
-                return NotFound("Employé non trouvé.");
-            }
+                return NotFound();
 
             _context.Employes.Remove(employe);
             await _context.SaveChangesAsync();
 
-            Console.WriteLine($"Suppression réussie de l'employé {id} par {user.Email}");
             return NoContent();
         }
-
-
-
-
     }
 }

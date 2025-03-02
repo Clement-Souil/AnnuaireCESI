@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -8,19 +7,19 @@ using System.Windows;
 using System.Windows.Input;
 using AnnuaireApp.Helpers;
 using AnnuaireLibrary.DTO;
+using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.VisualBasic;
 
 namespace AnnuaireApp.ViewModels
 {
-    public class AddEmployeViewModel : BaseViewModel
+    public class EditEmployeViewModel : BaseViewModel
     {
         private readonly HttpClient _httpClient;
-        public EmployeDTO NewEmploye { get; set; } = new();
+        public EmployeDTO Employe { get; set; }
 
-        // Listes déroulantes pour les services et sites
         public ObservableCollection<ServiceDTO> Services { get; set; } = new();
         public ObservableCollection<SiteDTO> Sites { get; set; } = new();
 
-        // Sélections utilisateur
         private ServiceDTO _selectedService;
         public ServiceDTO SelectedService
         {
@@ -28,7 +27,7 @@ namespace AnnuaireApp.ViewModels
             set
             {
                 _selectedService = value;
-                NewEmploye.ServiceId = value?.Id ?? 0; // Mise à jour de l'ID en base
+                Employe.ServiceId = value?.Id ?? 0;
                 OnPropertyChanged(nameof(SelectedService));
             }
         }
@@ -40,25 +39,25 @@ namespace AnnuaireApp.ViewModels
             set
             {
                 _selectedSite = value;
-                NewEmploye.SiteId = value?.Id ?? 0; // Mise à jour de l'ID en base
+                Employe.SiteId = value?.Id ?? 0;
                 OnPropertyChanged(nameof(SelectedSite));
             }
         }
 
-        // Commandes
-        public ICommand AddEmployeCommand { get; }
+        public ICommand EditEmployeCommand { get; }
         public ICommand CloseWindowCommand { get; }
 
-        public AddEmployeViewModel()
+        public EditEmployeViewModel(EmployeDTO employe)
         {
             _httpClient = new HttpClient();
-            LoadServicesAndSites();
+            Employe = employe;
 
-            AddEmployeCommand = new RelayCommand(ExecuteAddEmploye);
+            EditEmployeCommand = new RelayCommand(async _ => await ExecuteEditEmploye());
             CloseWindowCommand = new RelayCommand(ExecuteCloseWindow);
+
+            LoadServicesAndSites();
         }
 
-        // Charger les services et sites depuis l'API
         private async void LoadServicesAndSites()
         {
             try
@@ -66,23 +65,29 @@ namespace AnnuaireApp.ViewModels
                 var servicesResult = await _httpClient.GetFromJsonAsync<ObservableCollection<ServiceDTO>>("https://localhost:7212/api/service");
                 var sitesResult = await _httpClient.GetFromJsonAsync<ObservableCollection<SiteDTO>>("https://localhost:7212/api/site");
 
-                if (servicesResult != null) Services = servicesResult;
-                if (sitesResult != null) Sites = sitesResult;
+                if (servicesResult != null)
+                    Services = servicesResult;
+                if (sitesResult != null)
+                    Sites = sitesResult;
 
                 OnPropertyChanged(nameof(Services));
                 OnPropertyChanged(nameof(Sites));
+
+                // Associer le service et le site sélectionnés
+                SelectedService = Services.FirstOrDefault(s => s.Id == Employe.ServiceId);
+                SelectedSite = Sites.FirstOrDefault(s => s.Id == Employe.SiteId);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur de chargement des listes : {ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Erreur de chargement des services/sites : {ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private bool ValidateEmploye()
+        private bool ModifyEmploye()
         {
-            var context = new ValidationContext(NewEmploye, null, null);
+            var context = new ValidationContext(Employe, null, null);
             var results = new List<ValidationResult>();
-            bool isValid = Validator.TryValidateObject(NewEmploye, context, results, true);
+            bool isValid = Validator.TryValidateObject(Employe, context, results, true);
 
             if (!isValid)
             {
@@ -94,34 +99,23 @@ namespace AnnuaireApp.ViewModels
             return isValid;
         }
 
-        private async void ExecuteAddEmploye(object? parameter)
+
+        private async Task ExecuteEditEmploye()
         {
-            if (!ValidateEmploye()) return; // Annule l'envoi si validation échoue
+            if (!ModifyEmploye()) return; // Annule la modification si validation échoue
 
             try
             {
+                var response = await _httpClient.PutAsJsonAsync($"https://localhost:7212/api/employe/{Employe.Id}", Employe);
 
-                MessageBox.Show($"Envoi :\nNom: {NewEmploye.Nom}\nPrénom: {NewEmploye.Prenom}\n" +
-                    $"Fixe: {NewEmploye.TelephoneFixe}\nPortable: {NewEmploye.TelephonePortable}\n" +
-                    $"Email: {NewEmploye.Email}\nServiceID: {NewEmploye.ServiceId}\nSiteID: {NewEmploye.SiteId}",
-                    "Vérification", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                var response = await _httpClient.PostAsJsonAsync("https://localhost:7212/api/employe", NewEmploye);
                 if (response.IsSuccessStatusCode)
                 {
-                    MessageBox.Show("Employé ajouté avec succès !", "Succès", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Employé modifié avec succès !", "Succès", MessageBoxButton.OK, MessageBoxImage.Information);
                     ExecuteCloseWindow(null);
-
-                    if (Application.Current.Windows.OfType<Views.MainWindow>().FirstOrDefault()?.DataContext is EmployeViewModel employeVM)
-                    {
-                        MessageBox.Show("Rafraîchissement après ajout");
-                        await employeVM.LoadEmployes();
-                    }
-
                 }
                 else
                 {
-                    MessageBox.Show("Erreur lors de l'ajout de l'employé.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Erreur lors de la modification de l'employé.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
@@ -134,7 +128,7 @@ namespace AnnuaireApp.ViewModels
         {
             foreach (Window window in Application.Current.Windows)
             {
-                if (window is Views.AddEmployeView)
+                if (window is Views.EditEmployeView)
                 {
                     window.Close();
                     break;

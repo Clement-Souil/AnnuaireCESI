@@ -22,7 +22,7 @@
             <Button Content="Supprimer" Command="{Binding DeleteEmployeCommand}" Width="80" />
         </StackPanel>
         <!-- Tableau pour afficher les employés -->
-        <DataGrid Grid.Row="1" ItemsSource="{Binding Employes}" AutoGenerateColumns="False" IsReadOnly="True">
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Employes}" SelectedItem="{Binding SelectedEmploye, Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*" />
                 <DataGridTextColumn Header="Prénom" Binding="{Binding Prenom}" Width="*" />

@@ -54,6 +54,17 @@ namespace AnnuaireApp.ViewModels
             }
         }
 
+        private EmployeDTO _selectedEmploye;
+        public EmployeDTO SelectedEmploye
+        {
+            get => _selectedEmploye;
+            set
+            {
+                _selectedEmploye = value;
+                OnPropertyChanged(nameof(SelectedEmploye));
+            }
+        }
+
         // Constructeur
         public EmployeViewModel()
         {
@@ -62,7 +73,23 @@ namespace AnnuaireApp.ViewModels
 
             // Initialisation des commandes 
             AddEmployeCommand = new RelayCommand(ExecuteAddEmploye);
-            EditEmployeCommand = new RelayCommand(ExecuteEditEmploye);
+            EditEmployeCommand = new RelayCommand(_ =>
+            {
+                if (SelectedEmploye != null)
+                {
+                    var editEmployeView = new Views.EditEmployeView
+                    {
+                        DataContext = new EditEmployeViewModel(SelectedEmploye)
+                    };
+                    editEmployeView.ShowDialog();
+                    LoadEmployes();
+                }
+                else
+                {
+                    MessageBox.Show("Veuillez sélectionner un employé avant de modifier.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            });
+
             DeleteEmployeCommand = new RelayCommand(ExecuteDeleteEmploye);
         }
 
@@ -107,7 +134,7 @@ namespace AnnuaireApp.ViewModels
             }
         }
 
-        private async Task LoadEmployes()
+        public async Task LoadEmployes()
         {
             try
             {
@@ -153,14 +180,41 @@ namespace AnnuaireApp.ViewModels
             LoadEmployes(); // Rafraîchir la liste après l'ajout
         }
 
-        private void ExecuteEditEmploye(object? parameter)
+
+        private async void ExecuteDeleteEmploye(object? parameter)
         {
-            MessageBox.Show("Modification employé");
+            if (SelectedEmploye == null)
+            {
+                MessageBox.Show("Veuillez sélectionner un employé à supprimer.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var result = MessageBox.Show($"Êtes-vous sûr de vouloir supprimer {SelectedEmploye.Nom} {SelectedEmploye.Prenom} ?",
+                                         "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    var response = await _httpClient.DeleteAsync($"https://localhost:7212/api/employe/{SelectedEmploye.Id}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Employé supprimé avec succès !", "Succès", MessageBoxButton.OK, MessageBoxImage.Information);
+                        LoadEmployes(); // 🔄 Met à jour la liste après suppression
+                    }
+                    else
+                    {
+                        string errorMessage = await response.Content.ReadAsStringAsync();
+                        MessageBox.Show($"Erreur lors de la suppression de l'employé : {errorMessage}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Erreur : {ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
-        private void ExecuteDeleteEmploye(object? parameter)
-        {
-            MessageBox.Show("Suppression employé");
-        }
     }
 }
