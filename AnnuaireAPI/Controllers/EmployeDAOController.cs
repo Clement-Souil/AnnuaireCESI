@@ -236,5 +236,13 @@ namespace AnnuaireAPI.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("exists/{siteId}")]
+        public async Task<IActionResult> CheckIfSiteIsUsed(int siteId)
+        {
+            bool isUsed = await _context.Employes.AnyAsync(e => e.SiteId == siteId);
+            return Ok(isUsed);
+        }
+
     }
 }

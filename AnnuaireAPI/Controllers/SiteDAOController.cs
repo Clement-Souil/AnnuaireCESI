@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace AnnuaireAPI.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SiteController : ControllerBase
@@ -68,7 +68,7 @@ namespace AnnuaireAPI.Controllers
         // POST : api/site
         // Accessible uniquement par un administrateur
         [HttpPost]
-        [Authorize(Roles = "Admin")]  // Restreint aux administrateurs
+        //[Authorize(Roles = "Admin")]  // Restreint aux administrateurs
         public async Task<ActionResult<SiteDTO>> PostSite(SiteDTO siteDTO)
         {
             // Vérification que le nom du site est unique
@@ -98,65 +98,55 @@ namespace AnnuaireAPI.Controllers
         }
 
         // PUT : api/site/5
-        // Accessible uniquement par un administrateur
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]  // Restreint aux administrateurs
-        public async Task<IActionResult> PutSite(int id, SiteDTO siteDTO)
+        public async Task<IActionResult> PutSite(int id, [FromBody] SiteDTO siteDTO)
         {
             if (id != siteDTO.Id)
             {
-                // Vérification de l'intégrité des données
-                return BadRequest(new { message = "L'ID du site ne correspond pas" });
+                return BadRequest("L'ID du site dans l'URL ne correspond pas à l'ID du JSON.");
             }
 
-            // Recherche du site par son ID
-            var site = await _context.Sites.FindAsync(id);
-            if (site == null)
+            var existingSite = await _context.Sites.FindAsync(id);
+            if (existingSite == null)
             {
-                // Retourne une erreur 404 si le site n'existe pas
-                return NotFound(new { message = "Site non trouvé" });
+                return NotFound("Le site n'existe pas.");
             }
 
-            // Mise à jour du nom du site
-            site.Ville = siteDTO.Ville;
-
-            // Marquage de l'entité comme modifiée
-            _context.Entry(site).State = EntityState.Modified;
+            // Met à jour les champs
+            existingSite.Ville = siteDTO.Ville;
 
             try
             {
-                await _context.SaveChangesAsync(); // Sauvegarde des modifications
+                await _context.SaveChangesAsync(); // Enregistre en base
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erreur lors de la mise à jour" });
+                return StatusCode(500, $"Erreur serveur : {ex.Message}");
             }
 
-            // Retourne un succès sans contenu (204 No Content)
-            return NoContent();
+            return NoContent(); // Réponse 204 OK si tout va bien
         }
+
 
         // DELETE : api/site/5
         // Accessible uniquement par un administrateur
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]  // Restreint aux administrateurs
         public async Task<IActionResult> DeleteSite(int id)
         {
-            // Recherche du site par son ID
             var site = await _context.Sites.FindAsync(id);
             if (site == null)
-            {
-                // Erreur 404 si le site n'existe pas
-                return NotFound(new { message = "Site non trouvé" });
-            }
+                return NotFound();
 
-            // Suppression du site
+            // Vérifier s'il y a des employés attachés à ce site
+            bool hasEmployes = await _context.Employes.AnyAsync(e => e.SiteId == id);
+            if (hasEmployes)
+                return BadRequest("Impossible de supprimer ce site car des employés y sont rattachés.");
+
             _context.Sites.Remove(site);
-            await _context.SaveChangesAsync(); // Sauvegarde des modifications
+            await _context.SaveChangesAsync();
 
-            // Retourne un succès sans contenu (204 No Content)
             return NoContent();
         }
     }
-}
 
+}

@@ -101,11 +101,6 @@ namespace AnnuaireApp.ViewModels
             try
             {
 
-                MessageBox.Show($"Envoi :\nNom: {NewEmploye.Nom}\nPrénom: {NewEmploye.Prenom}\n" +
-                    $"Fixe: {NewEmploye.TelephoneFixe}\nPortable: {NewEmploye.TelephonePortable}\n" +
-                    $"Email: {NewEmploye.Email}\nServiceID: {NewEmploye.ServiceId}\nSiteID: {NewEmploye.SiteId}",
-                    "Vérification", MessageBoxButton.OK, MessageBoxImage.Information);
-
                 var response = await _httpClient.PostAsJsonAsync("https://localhost:7212/api/employe", NewEmploye);
                 if (response.IsSuccessStatusCode)
                 {

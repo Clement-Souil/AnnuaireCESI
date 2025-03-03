@@ -22,7 +22,7 @@
             <Button Content="Supprimer" Command="{Binding DeleteSiteCommand}" Width="80" />
         </StackPanel>
 
-        <DataGrid Grid.Row="1" ItemsSource="{Binding Sites}" AutoGenerateColumns="False" IsReadOnly="True">
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Sites}" SelectedItem="{Binding SelectedSite, Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Ville" Binding="{Binding Ville}" Width="*" />
             </DataGrid.Columns>
