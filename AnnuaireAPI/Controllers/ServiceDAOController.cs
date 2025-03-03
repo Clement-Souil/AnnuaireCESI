@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace AnnuaireAPI.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ServiceController : ControllerBase
@@ -68,7 +68,7 @@ namespace AnnuaireAPI.Controllers
         // POST : api/service
         // Accessible uniquement par un administrateur
         [HttpPost]
-        [Authorize(Roles = "Admin")]  // Restreint aux administrateurs
+        //[Authorize(Roles = "Admin")]  // Restreint aux administrateurs
         public async Task<ActionResult<ServiceDTO>> PostService(ServiceDTO serviceDTO)
         {
             // Vérification que le nom du service est unique
@@ -100,7 +100,7 @@ namespace AnnuaireAPI.Controllers
         // PUT : api/service/5
         // Accessible uniquement par un administrateur
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]  // Restreint aux administrateurs
+        //[Authorize(Roles = "Admin")]  // Restreint aux administrateurs
         public async Task<IActionResult> PutService(int id, ServiceDTO serviceDTO)
         {
             if (id != serviceDTO.Id)
@@ -139,7 +139,7 @@ namespace AnnuaireAPI.Controllers
         // DELETE : api/service/5
         // Accessible uniquement par un administrateur
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]  // Restreint aux administrateurs
+        //[Authorize(Roles = "Admin")]  // Restreint aux administrateurs
         public async Task<IActionResult> DeleteService(int id)
         {
             // Recherche du service par son ID

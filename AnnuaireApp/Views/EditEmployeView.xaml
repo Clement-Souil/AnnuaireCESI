@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:AnnuaireApp.Views"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      Title="EditEmployeView">
+      Title="Ajouter un employé">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>

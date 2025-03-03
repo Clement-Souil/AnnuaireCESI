@@ -22,7 +22,7 @@
             <Button Content="Supprimer" Command="{Binding DeleteServiceCommand}" Width="80" />
         </StackPanel>
 
-        <DataGrid Grid.Row="1" ItemsSource="{Binding Services}" AutoGenerateColumns="False" IsReadOnly="True">
+        <DataGrid Grid.Row="1" SelectedItem="{Binding SelectedService, Mode=TwoWay}" ItemsSource="{Binding Services}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Nom du Service" Binding="{Binding Nom}" Width="*" />
             </DataGrid.Columns>
