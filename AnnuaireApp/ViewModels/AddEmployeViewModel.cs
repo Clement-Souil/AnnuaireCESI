@@ -42,8 +42,11 @@ namespace AnnuaireApp.ViewModels
                 _selectedSite = value;
                 NewEmploye.SiteId = value?.Id ?? 0; // Mise à jour de l'ID en base
                 OnPropertyChanged(nameof(SelectedSite));
+                MessageBox.Show($"Vérif avant POST:\nNom: {NewEmploye.Nom}\nServiceID: {NewEmploye.ServiceId}\nSiteID: {NewEmploye.SiteId}");
+
             }
         }
+
 
         // Commandes
         public ICommand AddEmployeCommand { get; }

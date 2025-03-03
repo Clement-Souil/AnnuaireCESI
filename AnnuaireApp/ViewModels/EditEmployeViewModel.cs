@@ -102,10 +102,12 @@ namespace AnnuaireApp.ViewModels
 
         private async Task ExecuteEditEmploye()
         {
+
             if (!ModifyEmploye()) return; // Annule la modification si validation échoue
 
             try
             {
+
                 var response = await _httpClient.PutAsJsonAsync($"https://localhost:7212/api/employe/{Employe.Id}", Employe);
 
                 if (response.IsSuccessStatusCode)

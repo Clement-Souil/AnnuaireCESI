@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Input;
 using AnnuaireApp.Helpers;
 using AnnuaireLibrary.DTO;
+using System.Linq;
 
 namespace AnnuaireApp.ViewModels
 {
@@ -30,6 +31,7 @@ namespace AnnuaireApp.ViewModels
         public ICommand AddEmployeCommand { get; }
         public ICommand EditEmployeCommand { get; }
         public ICommand DeleteEmployeCommand { get; }
+        public ICommand ShowDetailsCommand { get; } //  Ajout
 
         // Listes des services et sites
         private ObservableCollection<ServiceDTO> _services = new();
@@ -65,13 +67,52 @@ namespace AnnuaireApp.ViewModels
             }
         }
 
-        // Constructeur
+        //  Ajout de la recherche et des filtres
+        private string _searchText = "";
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                _searchText = value;
+                OnPropertyChanged(nameof(SearchText));
+                FilterEmployes();
+            }
+        }
+
+        private ServiceDTO _selectedService;
+        public ServiceDTO SelectedService
+        {
+            get => _selectedService;
+            set
+            {
+                _selectedService = value;
+                OnPropertyChanged(nameof(SelectedService));
+                FilterEmployes();
+            }
+        }
+
+        private SiteDTO _selectedSite;
+        public SiteDTO SelectedSite
+        {
+            get => _selectedSite;
+            set
+            {
+                _selectedSite = value;
+                OnPropertyChanged(nameof(SelectedSite));
+                FilterEmployes();
+            }
+        }
+
+        //  Liste complète pour filtrage
+        private ObservableCollection<EmployeDTO> _allEmployes = new();
+
+        //  Constructeur (inchangé sauf ajouts)
         public EmployeViewModel()
         {
             _httpClient = new HttpClient();
-            LoadData(); //  On lance le chargement de manière propre
+            LoadData();
 
-            // Initialisation des commandes 
             AddEmployeCommand = new RelayCommand(ExecuteAddEmploye);
             EditEmployeCommand = new RelayCommand(_ =>
             {
@@ -91,9 +132,36 @@ namespace AnnuaireApp.ViewModels
             });
 
             DeleteEmployeCommand = new RelayCommand(ExecuteDeleteEmploye);
+            ShowDetailsCommand = new RelayCommand(ExecuteShowDetails); //  Ajout
         }
 
-        //  Nouvelle méthode pour garantir que Services et Sites sont bien chargés avant les employés
+        private void ExecuteAddEmploye(object? parameter)
+        {
+            var addEmployeView = new Views.AddEmployeView
+            {
+                DataContext = new AddEmployeViewModel()
+            };
+            addEmployeView.ShowDialog();
+            LoadEmployes(); // Rafraîchir la liste après l'ajout
+        }
+
+        //  Affichage des détails d'un employé
+        private void ExecuteShowDetails(object? parameter)
+        {
+            if (SelectedEmploye == null)
+            {
+                MessageBox.Show("Veuillez sélectionner un employé.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var detailView = new Views.EmployeDetailView
+            {
+                DataContext = new EmployeDetailViewModel(SelectedEmploye)
+            };
+            detailView.ShowDialog();
+        }
+
+        //  Charge Services et Sites avant les employés (inchangé)
         private async void LoadData()
         {
             await LoadServicesAndSites();
@@ -120,12 +188,6 @@ namespace AnnuaireApp.ViewModels
                     foreach (var site in sitesResult)
                         Sites.Add(site);
                 }
-
-                //  Vérification après chargement
-                if (Services.Count == 0 || Sites.Count == 0)
-                {
-                    MessageBox.Show(" Problème : Services ou Sites non chargés !", "Erreur de chargement", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
             }
             catch (Exception ex)
             {
@@ -150,6 +212,7 @@ namespace AnnuaireApp.ViewModels
                 if (result != null)
                 {
                     Employes.Clear();
+                    _allEmployes = result;
                     foreach (var employe in result)
                     {
                         var service = Services.FirstOrDefault(s => s.Id == employe.ServiceId);
@@ -160,6 +223,7 @@ namespace AnnuaireApp.ViewModels
 
                         Employes.Add(employe);
                     }
+                    FilterEmployes(); //  Appliquer le filtre immédiatement
                 }
             }
             catch (Exception ex)
@@ -169,17 +233,32 @@ namespace AnnuaireApp.ViewModels
             }
         }
 
-        // Méthodes des boutons
-        private void ExecuteAddEmploye(object? parameter)
+        //  Filtrage des employés
+        private void FilterEmployes()
         {
-            var addEmployeView = new Views.AddEmployeView
-            {
-                DataContext = new AddEmployeViewModel()
-            };
-            addEmployeView.ShowDialog();
-            LoadEmployes(); // Rafraîchir la liste après l'ajout
-        }
+            IEnumerable<EmployeDTO> filtered = _allEmployes;
 
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                filtered = filtered.Where(e => e.Nom.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (SelectedService != null)
+            {
+                filtered = filtered.Where(e => e.ServiceId == SelectedService.Id);
+            }
+
+            if (SelectedSite != null)
+            {
+                filtered = filtered.Where(e => e.SiteId == SelectedSite.Id);
+            }
+
+            Employes.Clear();
+            foreach (var employe in filtered)
+            {
+                Employes.Add(employe);
+            }
+        }
 
         private async void ExecuteDeleteEmploye(object? parameter)
         {
@@ -215,6 +294,5 @@ namespace AnnuaireApp.ViewModels
                 }
             }
         }
-
     }
 }

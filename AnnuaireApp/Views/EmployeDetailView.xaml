@@ -1,0 +1,26 @@
+﻿<Window x:Class="AnnuaireApp.Views.EmployeDetailView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AnnuaireApp.Views"
+        mc:Ignorable="d"
+        Title="Fiche employé" Height="300" Width="400">
+    <Grid Margin="10">
+        <StackPanel>
+            <TextBlock Text="{Binding Employe.Nom}" FontSize="18" FontWeight="Bold"/>
+            <TextBlock Text="{Binding Employe.Prenom}" FontSize="16"/>
+            <TextBlock Text="📞 Téléphone Fixe : " FontWeight="Bold"/>
+            <TextBlock Text="{Binding Employe.TelephoneFixe}"/>
+            <TextBlock Text="📱 Téléphone Portable : " FontWeight="Bold"/>
+            <TextBlock Text="{Binding Employe.TelephonePortable}"/>
+            <TextBlock Text="📧 Email : " FontWeight="Bold"/>
+            <TextBlock Text="{Binding Employe.Email}"/>
+            <TextBlock Text="🏢 Service : " FontWeight="Bold"/>
+            <TextBlock Text="{Binding Employe.Service}"/>
+            <TextBlock Text="📍 Site : " FontWeight="Bold"/>
+            <TextBlock Text="{Binding Employe.Site}"/>
+            <Button Content="Fermer" HorizontalAlignment="Right" Width="80" Click="CloseWindow"/>
+        </StackPanel>
+    </Grid>
+</Window>

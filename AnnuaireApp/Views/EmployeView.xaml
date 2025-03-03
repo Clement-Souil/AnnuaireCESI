@@ -20,9 +20,41 @@
             <Button Content="Ajouter" Command="{Binding AddEmployeCommand}" Width="80" />
             <Button Content="Modifier" Command="{Binding EditEmployeCommand}" Width="80" />
             <Button Content="Supprimer" Command="{Binding DeleteEmployeCommand}" Width="80" />
+            <!-- Champ de recherche avec placeholder -->
+            <Grid Width="250" Margin="10,0,0,0">
+                <TextBox Name="SearchBox"
+                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                 Width="250" VerticalAlignment="Center"/>
+
+                <TextBlock Text="Rechercher un employé..."
+                   Foreground="Gray"
+                   VerticalAlignment="Center" HorizontalAlignment="Left"
+                   Margin="5,0,0,0"
+                   Visibility="Visible"/>
+
+            </Grid>
+
+            <!-- Filtre par Service -->
+            <ComboBox ItemsSource="{Binding Services}" 
+              DisplayMemberPath="Nom"
+              SelectedItem="{Binding SelectedService, Mode=TwoWay}"
+              Width="150" Margin="10,0,0,0"/>
+
+            <!-- Filtre par Site -->
+            <ComboBox ItemsSource="{Binding Sites}" 
+              DisplayMemberPath="Ville"
+              SelectedItem="{Binding SelectedSite, Mode=TwoWay}"
+              Width="150" Margin="10,0,0,0"/>
+
         </StackPanel>
         <!-- Tableau pour afficher les employés -->
         <DataGrid Grid.Row="1" ItemsSource="{Binding Employes}" SelectedItem="{Binding SelectedEmploye, Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True">
+            
+            <!-- Gestion du double-clic pour afficher les détails -->
+            <DataGrid.InputBindings>
+                <MouseBinding Gesture="LeftDoubleClick" Command="{Binding ShowDetailsCommand}" />
+            </DataGrid.InputBindings>
+            
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*" />
                 <DataGridTextColumn Header="Prénom" Binding="{Binding Prenom}" Width="*" />

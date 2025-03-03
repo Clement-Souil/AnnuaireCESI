@@ -25,6 +25,19 @@ namespace AnnuaireApp.Views
         {
             InitializeComponent();
             DataContext = new EmployeViewModel();
+            SearchBox.TextChanged += SearchBox_TextChanged;
+        }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox textBox)
+            {
+                // Récupère le TextBlock frère dans le Grid
+                if (textBox.Parent is Grid grid && grid.Children[1] is TextBlock placeholder)
+                {
+                    placeholder.Visibility = string.IsNullOrWhiteSpace(textBox.Text) ? Visibility.Visible : Visibility.Collapsed;
+                }
+            }
         }
     }
 }

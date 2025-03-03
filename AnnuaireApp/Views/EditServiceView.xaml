@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AnnuaireApp.Views"
         mc:Ignorable="d"
-        Title="EditServiceView" Height="200" Width="300">
+        Title="Modifier un site" Height="200" Width="300">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

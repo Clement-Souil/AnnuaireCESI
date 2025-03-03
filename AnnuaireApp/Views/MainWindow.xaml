@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AnnuaireApp"
         mc:Ignorable="d"
-        Title="Annuaire" Height="600" Width="900">
+        Title="Annuaire" Height="600" Width="1200">
     <Grid>
         <DockPanel>
             <!-- Menu latéral -->
