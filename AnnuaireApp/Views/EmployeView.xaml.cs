@@ -26,6 +26,13 @@ namespace AnnuaireApp.Views
             InitializeComponent();
             DataContext = new EmployeViewModel();
             SearchBox.TextChanged += SearchBox_TextChanged;
+            UpdateAdminUI();
+        }
+
+        public void UpdateAdminUI()
+        {
+            AdminButtonsPanel.Visibility = AdminManager.IsAdmin ? Visibility.Visible : Visibility.Collapsed;
+
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -39,5 +46,6 @@ namespace AnnuaireApp.Views
                 }
             }
         }
+
     }
 }

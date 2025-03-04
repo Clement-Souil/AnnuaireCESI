@@ -26,5 +26,49 @@ namespace AnnuaireApp.Views
             DataContext = new MainViewModel(); // Ca c'est que lie à MainViewModel pour que ca régisse au changements.
 
         }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.LeftShift) && e.Key == Key.A && !AdminManager.IsAdmin)
+            {
+                var loginWindow = new LoginView();
+                loginWindow.ShowDialog();
+                UpdateAdminUI(); 
+            }
+        }
+
+
+        private void UpdateAdminUI()
+        {
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                if (mainWindow.MainFrame.Content is EmployeView employeView)
+                {
+                    employeView.UpdateAdminUI();
+                }
+                else if (mainWindow.MainFrame.Content is ServiceView serviceView)
+                {
+                    serviceView.UpdateAdminUI();
+                }
+                else if (mainWindow.MainFrame.Content is SiteView siteView)
+                {
+                    siteView.UpdateAdminUI();
+                }
+            }
+
+            LogoutButton.Visibility = AdminManager.IsAdmin ? Visibility.Visible : Visibility.Collapsed;
+
+        }
+
+
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            AdminManager.Logout();
+            MessageBox.Show("Déconnexion réussie !", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            UpdateAdminUI(); 
+        }
+
+
+
     }
 }

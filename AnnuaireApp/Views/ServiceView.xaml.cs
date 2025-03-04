@@ -25,6 +25,12 @@ namespace AnnuaireApp.Views
         {
             InitializeComponent();
             DataContext = new ServiceViewModel();
+            UpdateAdminUI(); // Met à jour l'interface après connexion
+        }
+
+        public void UpdateAdminUI()
+        {
+            AdminButtonsPanel.Visibility = AdminManager.IsAdmin ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }

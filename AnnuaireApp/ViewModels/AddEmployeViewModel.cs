@@ -28,7 +28,7 @@ namespace AnnuaireApp.ViewModels
             set
             {
                 _selectedService = value;
-                NewEmploye.ServiceId = value?.Id ?? 0; // Mise à jour de l'ID en base
+                NewEmploye.ServiceId = value?.Id ?? 0; 
                 OnPropertyChanged(nameof(SelectedService));
             }
         }
@@ -40,10 +40,8 @@ namespace AnnuaireApp.ViewModels
             set
             {
                 _selectedSite = value;
-                NewEmploye.SiteId = value?.Id ?? 0; // Mise à jour de l'ID en base
+                NewEmploye.SiteId = value?.Id ?? 0; 
                 OnPropertyChanged(nameof(SelectedSite));
-                MessageBox.Show($"Vérif avant POST:\nNom: {NewEmploye.Nom}\nServiceID: {NewEmploye.ServiceId}\nSiteID: {NewEmploye.SiteId}");
-
             }
         }
 
@@ -99,7 +97,7 @@ namespace AnnuaireApp.ViewModels
 
         private async void ExecuteAddEmploye(object? parameter)
         {
-            if (!ValidateEmploye()) return; // Annule l'envoi si validation échoue
+            if (!ValidateEmploye()) return;
 
             try
             {

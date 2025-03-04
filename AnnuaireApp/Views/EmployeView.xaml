@@ -16,37 +16,63 @@
             <!-- Ligne pour la liste -->
         </Grid.RowDefinitions>
         <!-- Boutons CRUD au-dessus de la liste -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
-            <Button Content="Ajouter" Command="{Binding AddEmployeCommand}" Width="80" />
-            <Button Content="Modifier" Command="{Binding EditEmployeCommand}" Width="80" />
-            <Button Content="Supprimer" Command="{Binding DeleteEmployeCommand}" Width="80" />
-            <!-- Champ de recherche avec placeholder -->
+        <!-- Section Admin : Boutons visibles uniquement en mode Admin -->
+        <StackPanel Name="AdminButtonsPanel" Visibility="Collapsed" Orientation="Horizontal" Grid.Column="0">
+            <Button Content="Ajouter" Command="{Binding AddEmployeCommand}" Width="80"/>
+            <Button Content="Modifier" Command="{Binding EditEmployeCommand}" Width="80"/>
+            <Button Content="Supprimer" Command="{Binding DeleteEmployeCommand}" Width="80"/>
+        </StackPanel>
+
+        <!-- Recherche et Filtres visibles pour tous -->
+        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+
             <Grid Width="250" Margin="10,0,0,0">
+                <!-- Champ de recherche -->
                 <TextBox Name="SearchBox"
-                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                 Width="250" VerticalAlignment="Center"/>
+             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+             Width="250" VerticalAlignment="Center"/>
 
+                <!-- Placeholder qui disparaît quand l'utilisateur commence à taper -->
                 <TextBlock Text="Rechercher un employé..."
-                   Foreground="Gray"
-                   VerticalAlignment="Center" HorizontalAlignment="Left"
-                   Margin="5,0,0,0"
-                   Visibility="Visible"/>
-
+               Foreground="Gray"
+               VerticalAlignment="Center" HorizontalAlignment="Left"
+               Margin="5,0,0,0"
+               IsHitTestVisible="False">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Text, ElementName=SearchBox}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
             </Grid>
+
+
+
 
             <!-- Filtre par Service -->
             <ComboBox ItemsSource="{Binding Services}" 
-              DisplayMemberPath="Nom"
-              SelectedItem="{Binding SelectedService, Mode=TwoWay}"
-              Width="150" Margin="10,0,0,0"/>
+                  DisplayMemberPath="Nom"
+                  SelectedItem="{Binding SelectedService, Mode=TwoWay}"
+                  Width="150" Margin="10,0,0,0"/>
 
             <!-- Filtre par Site -->
             <ComboBox ItemsSource="{Binding Sites}" 
-              DisplayMemberPath="Ville"
-              SelectedItem="{Binding SelectedSite, Mode=TwoWay}"
-              Width="150" Margin="10,0,0,0"/>
-
+                  DisplayMemberPath="Ville"
+                  SelectedItem="{Binding SelectedSite, Mode=TwoWay}"
+                  Width="150" Margin="10,0,0,0"/>
         </StackPanel>
+        
         <!-- Tableau pour afficher les employés -->
         <DataGrid Grid.Row="1" ItemsSource="{Binding Employes}" SelectedItem="{Binding SelectedEmploye, Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True">
             

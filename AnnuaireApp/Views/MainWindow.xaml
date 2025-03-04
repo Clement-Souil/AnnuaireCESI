@@ -5,6 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AnnuaireApp"
         mc:Ignorable="d"
+        KeyDown="Window_KeyDown"
+        PreviewKeyDown="Window_KeyDown"
         Title="Annuaire" Height="600" Width="1200">
     <Grid>
         <DockPanel>
@@ -13,8 +15,15 @@
                 <Button Content="Employés" Command="{Binding NavigateToEmploye}" Foreground="White" />
                 <Button Content="Services" Command="{Binding NavigateToService}" Foreground="White" />
                 <Button Content="Sites" Command="{Binding NavigateToSite}" Foreground="White" />
-                <Button Content="Admin" Command="{Binding NavigateToAdmin}" Foreground="White" />
-                <Button Content="Déconnexion" Command="{Binding LogoutCommand}" Foreground="White" />
+                <!-- Bouton de déconnexion pour Admin -->
+                <Button x:Name="LogoutButton"
+                    Content="Déconnexion"
+                    Click="Logout_Click"
+                    Width="100" Margin="10"
+                    Visibility="Collapsed"/>    
+
+
+
             </StackPanel>
 
             <!-- Contenu principal qui change en fonction de la navigation -->

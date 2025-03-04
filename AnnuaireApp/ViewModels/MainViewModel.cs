@@ -1,8 +1,10 @@
 ﻿using AnnuaireApp.Helpers;
 using System;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+
 
 namespace AnnuaireApp.ViewModels
 {
@@ -15,6 +17,17 @@ namespace AnnuaireApp.ViewModels
         public ICommand NavigateToAdmin { get; }
         public ICommand LogoutCommand { get; }
 
+        private bool _isAdmin;
+        public bool IsAdmin
+        {
+            get => _isAdmin;
+            set
+            {
+                _isAdmin = value;
+                OnPropertyChanged(nameof(IsAdmin));
+            }
+        }
+
         // Constructeur de la classe
         public MainViewModel()
         {
@@ -22,8 +35,8 @@ namespace AnnuaireApp.ViewModels
             NavigateToEmploye = new RelayCommand(_ => Navigate("Views/EmployeView.xaml"));
             NavigateToService = new RelayCommand(_ => Navigate("Views/ServiceView.xaml"));
             NavigateToSite = new RelayCommand(_ => Navigate("Views/SiteView.xaml"));
-            NavigateToAdmin = new RelayCommand(_ => Navigate("Views/AdminView.xaml"));
-            LogoutCommand = new RelayCommand(_ => Logout());
+            LogoutCommand = new RelayCommand(ExecuteLogout);
+
         }
 
         // Méthode pour changer dynamiquement la vue affichée
@@ -37,11 +50,27 @@ namespace AnnuaireApp.ViewModels
             }
         }
 
-        // Méthode pour gérer la déconnexion
-        private void Logout()
+        private async void ExecuteLogout(object? parameter)
         {
-            // Ici, on pourra fermer la session et rediriger vers la connexion
-            MessageBox.Show("Déconnexion réussie.");
+            try
+            {
+                using var httpClient = new HttpClient();
+                var response = await httpClient.PostAsync("https://localhost:7212/api/auth/logout", null);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Déconnexion réussie !", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    AdminManager.Logout(); // Réinitialise l'état admin
+                }
+                else
+                {
+                    MessageBox.Show("Erreur lors de la déconnexion.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erreur : {ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

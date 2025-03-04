@@ -240,7 +240,8 @@ namespace AnnuaireApp.ViewModels
 
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
-                filtered = filtered.Where(e => e.Nom.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+                filtered = filtered.Where(e => e.Nom.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
+                                           || e.Prenom.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
             }
 
             if (SelectedService != null)
@@ -259,7 +260,7 @@ namespace AnnuaireApp.ViewModels
                 Employes.Add(employe);
             }
         }
-
+      
         private async void ExecuteDeleteEmploye(object? parameter)
         {
             if (SelectedEmploye == null)

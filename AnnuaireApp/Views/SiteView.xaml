@@ -16,7 +16,7 @@
             <!-- Ligne pour la liste -->
         </Grid.RowDefinitions>
         <!-- Boutons CRUD au-dessus de la liste -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
+        <StackPanel  Name="AdminButtonsPanel" Visibility="Collapsed" Grid.Row="0" Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
             <Button Content="Ajouter" Command="{Binding AddSiteCommand}" Width="80" />
             <Button Content="Modifier" Command="{Binding EditSiteCommand}" Width="80" />
             <Button Content="Supprimer" Command="{Binding DeleteSiteCommand}" Width="80" />
