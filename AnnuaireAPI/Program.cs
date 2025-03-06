@@ -1,8 +1,11 @@
 using AnnuaireLibrary.Data;
 using AnnuaireLibrary.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +33,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+
 var app = builder.Build();
 
 //  Configuration du pipeline HTTP
@@ -39,7 +43,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Annuaire API V1");
-        options.RoutePrefix = "swagger"; // URL accessible sur /swagger
+        options.RoutePrefix = "swagger"; 
     });
 }
 
@@ -50,5 +54,7 @@ app.UseAuthentication(); // Active l'authentification ASP.NET Identity
 app.UseAuthorization(); // Active l'autorisation
 
 app.MapControllers(); // Mappe les routes vers les contrôleurs
+
+
 
 app.Run();

@@ -167,6 +167,7 @@ namespace AnnuaireAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        //[Authorize(Policy = "RequireAdminRole")]
         public async Task<IActionResult> PutEmploye(int id, EmployeDTO employeDTO)
         {
             if (id != employeDTO.Id)
@@ -202,6 +203,7 @@ namespace AnnuaireAPI.Controllers
             var site = await _context.Sites.FirstOrDefaultAsync(s => s.Id == employeDTO.SiteId);
 
             if (service == null || site == null)
+
                 return BadRequest("Le service ou le site n'existe pas.");
 
             var employe = new EmployeDAO

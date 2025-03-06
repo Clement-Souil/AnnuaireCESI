@@ -24,13 +24,14 @@ namespace AnnuaireLibrary.DTO
         [EmailAddress(ErrorMessage = "L'email n'est pas valide.")]
         public string? Email { get; set; }
 
-        [Required(ErrorMessage = "Le service est obligatoire.")]
-        public int ServiceId { get; set; }
-       
-        [Required(ErrorMessage = "Le site est obligatoire.")]
-        public int SiteId { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "Le service est obligatoire.")]
+        public int ServiceId { get; set; } = 0;
+
+        [Range(1, int.MaxValue, ErrorMessage = "Le site est obligatoire.")]
+        public int SiteId { get; set; } = 0;    
 
         //// Champs uniquement pour affichage (non sérialisés en entrée)
+        
         [System.Text.Json.Serialization.JsonIgnore]  // Ignore en POST
         public string? Service { get; set; }
 
