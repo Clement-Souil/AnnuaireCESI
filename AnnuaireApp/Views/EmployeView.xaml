@@ -23,16 +23,15 @@
             <Button Content="Supprimer" Command="{Binding DeleteEmployeCommand}" Width="80"/>
         </StackPanel>
 
-        <!-- Recherche et Filtres visibles pour tous -->
+        <!-- Recherche et Filtres visibles pour amdin et visiteurs -->
         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
 
             <Grid Width="250" Margin="10,0,0,0">
-                <!-- Champ de recherche -->
                 <TextBox Name="SearchBox"
              Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
              Width="250" VerticalAlignment="Center"/>
 
-                <!-- Placeholder qui disparaît quand l'utilisateur commence à taper -->
+                <!-- Le placehorlde va servir pour que Rechercher disparaissent quand on tape un truc -->
                 <TextBlock Text="Rechercher un employé..."
                Foreground="Gray"
                VerticalAlignment="Center" HorizontalAlignment="Left"
@@ -57,16 +56,13 @@
                 </TextBlock>
             </Grid>
 
-
-
-
-            <!-- Filtre par Service -->
+            <!-- Filtre pour les Service -->
             <ComboBox ItemsSource="{Binding Services}" 
                   DisplayMemberPath="Nom"
                   SelectedItem="{Binding SelectedService, Mode=TwoWay}"
                   Width="150" Margin="10,0,0,0"/>
 
-            <!-- Filtre par Site -->
+            <!-- Filtre pour les Site -->
             <ComboBox ItemsSource="{Binding Sites}" 
                   DisplayMemberPath="Ville"
                   SelectedItem="{Binding SelectedSite, Mode=TwoWay}"

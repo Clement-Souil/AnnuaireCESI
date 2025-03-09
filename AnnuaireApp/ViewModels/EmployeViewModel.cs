@@ -132,7 +132,11 @@ namespace AnnuaireApp.ViewModels
             });
 
             DeleteEmployeCommand = new RelayCommand(ExecuteDeleteEmploye);
-            ShowDetailsCommand = new RelayCommand(ExecuteShowDetails); //  Ajout
+            ShowDetailsCommand = new RelayCommand(ExecuteShowDetails);
+
+            // Petit rajout de dernière minute, on permet de vider les listes de tri 
+            SelectedService = new ServiceDTO { Id = -1, Nom = "Tous les services" };
+            SelectedSite = new SiteDTO { Id = -1, Ville = "Tous les sites" };
         }
 
         private void ExecuteAddEmploye(object? parameter)
@@ -168,6 +172,34 @@ namespace AnnuaireApp.ViewModels
             await LoadEmployes();
         }
 
+        //private async Task LoadServicesAndSites()
+        //{
+        //    try
+        //    {
+        //        var servicesResult = await _httpClient.GetFromJsonAsync<ObservableCollection<ServiceDTO>>("https://localhost:7212/api/service");
+        //        var sitesResult = await _httpClient.GetFromJsonAsync<ObservableCollection<SiteDTO>>("https://localhost:7212/api/site");
+
+        //        if (servicesResult != null)
+        //        {
+        //            Services.Clear();
+        //            foreach (var service in servicesResult)
+        //                Services.Add(service);
+        //        }
+
+        //        if (sitesResult != null)
+        //        {
+        //            Sites.Clear();
+        //            foreach (var site in sitesResult)
+        //                Sites.Add(site);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Erreur de chargement des services/sites : {ex.Message}",
+        //                        "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+        //    }
+        //}
+
         private async Task LoadServicesAndSites()
         {
             try
@@ -175,19 +207,25 @@ namespace AnnuaireApp.ViewModels
                 var servicesResult = await _httpClient.GetFromJsonAsync<ObservableCollection<ServiceDTO>>("https://localhost:7212/api/service");
                 var sitesResult = await _httpClient.GetFromJsonAsync<ObservableCollection<SiteDTO>>("https://localhost:7212/api/site");
 
+                Services.Clear();
+                Services.Add(new ServiceDTO { Id = -1, Nom = "Tous les services" }); // Option pour réinitialiser
                 if (servicesResult != null)
                 {
-                    Services.Clear();
                     foreach (var service in servicesResult)
                         Services.Add(service);
                 }
 
+                Sites.Clear();
+                Sites.Add(new SiteDTO { Id = -1, Ville = "Tous les sites" }); // Option pour réinitialiser
                 if (sitesResult != null)
                 {
-                    Sites.Clear();
                     foreach (var site in sitesResult)
                         Sites.Add(site);
                 }
+
+                // Rajout de dernière minute deux, on affiche le texte Tout les services et sites par défaut pour orientier l'utilisateur. 
+                SelectedService = Services.FirstOrDefault();
+                SelectedSite = Sites.FirstOrDefault();
             }
             catch (Exception ex)
             {
@@ -195,6 +233,7 @@ namespace AnnuaireApp.ViewModels
                                 "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         public async Task LoadEmployes()
         {
@@ -234,6 +273,33 @@ namespace AnnuaireApp.ViewModels
         }
 
         //  Filtrage des employés
+        //private void FilterEmployes()
+        //{
+        //    IEnumerable<EmployeDTO> filtered = _allEmployes;
+
+        //    if (!string.IsNullOrWhiteSpace(SearchText))
+        //    {
+        //        filtered = filtered.Where(e => e.Nom.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
+        //                                   || e.Prenom.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+        //    }
+
+        //    if (SelectedService != null)
+        //    {
+        //        filtered = filtered.Where(e => e.ServiceId == SelectedService.Id);
+        //    }
+
+        //    if (SelectedSite != null)
+        //    {
+        //        filtered = filtered.Where(e => e.SiteId == SelectedSite.Id);
+        //    }
+
+        //    Employes.Clear();
+        //    foreach (var employe in filtered)
+        //    {
+        //        Employes.Add(employe);
+        //    }
+        //}
+
         private void FilterEmployes()
         {
             IEnumerable<EmployeDTO> filtered = _allEmployes;
@@ -244,12 +310,12 @@ namespace AnnuaireApp.ViewModels
                                            || e.Prenom.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (SelectedService != null)
+            if (SelectedService != null && SelectedService.Id != -1)
             {
                 filtered = filtered.Where(e => e.ServiceId == SelectedService.Id);
             }
 
-            if (SelectedSite != null)
+            if (SelectedSite != null && SelectedSite.Id != -1)
             {
                 filtered = filtered.Where(e => e.SiteId == SelectedSite.Id);
             }
@@ -260,7 +326,7 @@ namespace AnnuaireApp.ViewModels
                 Employes.Add(employe);
             }
         }
-      
+
         private async void ExecuteDeleteEmploye(object? parameter)
         {
             if (SelectedEmploye == null)
