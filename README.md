@@ -41,7 +41,7 @@ Avant d’installer et d’exécuter ce projet, assure-toi d’avoir :
    ```
 
 2. **Configurer la base de données**
-   - Modifier `appsettings.json` avec tes identifiants MySQL
+   - Modifier `appsettings.json` avec vos identifiants MySQL
    - Exécuter les migrations Entity Framework Core :
      ```sh
      dotnet ef database update
