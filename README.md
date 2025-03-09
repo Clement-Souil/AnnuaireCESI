@@ -36,7 +36,7 @@ Avant d’installer et d’exécuter ce projet, assure-toi d’avoir :
 
 1. **Cloner le dépôt**
    ```sh
-   git clone https://github.com/ton-repo/AnnuaireCESI.git
+   git clone https://github.com/Clement-Souil/AnnuaireCESI.git
    cd AnnuaireCESI
    ```
 
